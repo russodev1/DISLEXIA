@@ -32,11 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var quizContainer = document.getElementById('quiz');
   var startButton = document.getElementById('start');
-  var time = 30; // tempo inicial em segundos
-  var timerDisplay = document.createElement('div');
-  quizContainer.parentNode.insertBefore(timerDisplay, quizContainer);
-  var intervalId;
-  var questionIndex = 0; // Índice para acompanhar as questões
+  var questionIndex = 0; 
+  var score = 0; 
 
   function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -46,36 +43,25 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function startQuiz() {
-      shuffleArray(questions); // Embaralha as questões
+      shuffleArray(questions); 
       questionIndex = 0;
+      score = 0;
       showQuestion(questionIndex);
       startButton.style.display = 'none';
       quizContainer.style.display = 'block';
-      resetTimer(time); // Passa o tempo inicial ao resetar
   }
 
-  function resetTimer(initialTime) {
-      clearInterval(intervalId); // Para o timer existente
-      time = initialTime;
-      timerDisplay.textContent = `Tempo: ${time} segundos`;
-      intervalId = setInterval(function() {
-          time--;
-          timerDisplay.textContent = `Tempo: ${time} segundos`;
-          if (time <= 0) {
-              clearInterval(intervalId); // Para o timer
-              alert("Tempo esgotado!");
-              resetTimer(time); // Reinicia o timer, mas mantém o progresso do quiz
-              showQuestion(questionIndex); // Mostra a mesma questão novamente ao esgotar o tempo
-          }
-      }, 1000);
-  }
 
-  // Função que verifica se a escolha está correta comparando com a pergunta
   function checkAnswer(question, choice) {
-      return question === choice; // Verifica se a escolha é a mesma que a pergunta
+      return question === choice;
   }
 
   function showQuestion(index) {
+      if (index >= questions.length) {
+          endQuiz();
+          return;
+      }
+
       quizContainer.innerHTML = '';
       var question = questions[index];
       var questionElem = document.createElement('h2');
@@ -90,26 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
           button.onclick = function() {
               if (checkAnswer(question.question, choice)) {
                   alert("Resposta correta!");
-                  if (questionIndex < questions.length - 1) {
-                      questionIndex++;
-                      resetTimer(time); // Reinicia o timer ao acertar
-                      showQuestion(questionIndex); // Avança para a próxima pergunta
-                  } else {
-                      clearInterval(intervalId); // Para o timer após completar todas as perguntas
-                      alert("Parabéns! Você completou o quiz!");
-                      startButton.style.display = 'block'; // Mostra botão iniciar novamente
-                      quizContainer.style.display = 'none'; // Oculta o quiz ao terminar
-                  }
+                  score++; 
               } else {
                   alert("Resposta errada.");
-                  resetTimer(time); // Reinicia o timer ao errar
-                  showQuestion(questionIndex); // Mostra a mesma pergunta novamente
               }
+
+              questionIndex++;
+              showQuestion(questionIndex); 
           };
           li.appendChild(button);
           ul.appendChild(li);
       });
       quizContainer.appendChild(ul);
+  }
+
+  function endQuiz() {
+      quizContainer.innerHTML = `<h2>Quiz finalizado!</h2><p>Você acertou ${score} de ${questions.length} perguntas.</p>`;
+      startButton.style.display = 'block'; 
   }
 
   startButton.addEventListener('click', startQuiz);
